@@ -23,6 +23,7 @@ import com.google.gson.Gson
 fun ImageMarkerScreen(navController: NavController) {
     var puntos by remember { mutableStateOf(listOf<Punto>()) }
     var selectedId by remember { mutableStateOf<Int?>(null) }
+    var isDragging by remember { mutableStateOf(false) }
 
     val imageUrl = "https://fancyhouse-design.com/wp-content/uploads/2024/05/Weather-resistant-materials-for-outdoor-spaces-ensure-longevity-and-minimal-maintenance.jpg"
 
@@ -45,15 +46,24 @@ fun ImageMarkerScreen(navController: NavController) {
                 modifier = Modifier.fillMaxSize()
             )
 
-            Marker(
-                puntos = puntos,
-                onUpdatePuntos = { updatedPuntos ->
-                    puntos = updatedPuntos
-                },
-                onSelectPunto = { id ->
-                    selectedId = id
-                }
-            )
+            puntos.forEach { punto ->
+                Marker(
+                    punto = punto,
+                    isSelected = selectedId == punto.id,
+                    onPuntoUpdated = { updatedPunto ->
+                        puntos = puntos.map { if (it.id == updatedPunto.id) updatedPunto else it }
+                    },
+                    onPuntoSelected = {
+                        selectedId = punto.id
+                    },
+                    onDragStarted = {
+                        isDragging = true
+                    },
+                    onDragEnded = {
+                        isDragging = false
+                    }
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -64,6 +74,7 @@ fun ImageMarkerScreen(navController: NavController) {
                     id = puntos.size + 1,
                     coordenada = Offset(x = 150f, y = 150f)
                 )
+                selectedId = puntos.size + 1
             }) {
                 Text("Crear Punto")
             }

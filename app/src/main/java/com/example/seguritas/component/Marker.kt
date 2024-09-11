@@ -26,80 +26,63 @@ import com.example.seguritas.domain.Punto
 // TODO click punto con id menor desaparece punto con id mayor
 @Composable
 fun Marker(
-    puntos: List<Punto>,
-    onUpdatePuntos: (List<Punto>) -> Unit,
-    onSelectPunto: (Int) -> Unit
+    punto: Punto,
+    isSelected: Boolean,
+    onPuntoUpdated: (Punto) -> Unit,
+    onPuntoSelected: () -> Unit,
+    onDragStarted: () -> Unit,
+    onDragEnded: () -> Unit
 ) {
-    var selectedId by remember { mutableStateOf<Int?>(null) }
-    var draggingId by remember { mutableStateOf<Int?>(null) }
+    var offset by remember { mutableStateOf(punto.coordenada) }
+    var isDragging by remember { mutableStateOf(false) }
 
-    fun updatePuntos(updatedPunto: Punto) {
-        val updatedPuntos = puntos.map {
-            if (it.id == updatedPunto.id) {
-                updatedPunto
-            } else {
-                it
-            }
-        }
-        onUpdatePuntos(updatedPuntos)
-    }
-
-    puntos.forEach { punto ->
-        val isSelected by remember { derivedStateOf { punto.id == selectedId } }
-        var isDragging by remember { mutableStateOf(punto.id == draggingId) }
-        var offset by remember { mutableStateOf(punto.coordenada) }
-
-        Box(
-            modifier = Modifier
-                .offset(offset.x.dp, offset.y.dp)
-                .size(26.dp)
-                .background(
-                    color = when {
-                        isDragging -> Color.Green
-                        isSelected -> Color.Cyan
-                        else -> Color.White
-                    },
-                    shape = RoundedCornerShape(8.dp)
-                )
-                .border(2.dp, Color.Black, shape = RoundedCornerShape(8.dp))
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onTap = {
-                            if (selectedId != punto.id) {
-                                selectedId = punto.id
-                                onSelectPunto(punto.id) // Inform the parent about the selection
-                                draggingId = null
-                                updatePuntos(punto.copy(coordenada = offset))
-                            }
-                        }
-                    )
-                }
-                .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDragEnd = {
-                            isDragging = false
-                            draggingId = null
-                            updatePuntos(punto.copy(coordenada = offset))
-                        },
-                        onDrag = { change, dragAmount ->
-                            change.consume()
-                            isDragging = true
-                            draggingId = punto.id
-                            val newOffset = Offset(
-                                x = (offset.x + dragAmount.x).coerceIn(0f, 300f - 26f),
-                                y = (offset.y + dragAmount.y).coerceIn(0f, 300f - 26f)
-                            )
-                            offset = newOffset
-                        }
-                    )
-                }
-        ) {
-            Text(
-                text = punto.id.toString(),
-                fontSize = 10.sp,
-                color = Color.Black,
-                modifier = Modifier.align(Alignment.Center)
+    Box(
+        modifier = Modifier
+            .offset(offset.x.dp, offset.y.dp)
+            .size(26.dp)
+            .background(
+                color = when {
+                    isDragging -> Color.Green
+                    isSelected -> Color.Cyan
+                    else -> Color.White
+                },
+                shape = RoundedCornerShape(8.dp)
             )
-        }
+            .border(2.dp, Color.Black, shape = RoundedCornerShape(8.dp))
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = {
+                        onPuntoSelected()
+                    }
+                )
+            }
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragStart = {
+                        onDragStarted()
+                    },
+                    onDragEnd = {
+                        isDragging = false
+                        onDragEnded()
+                        onPuntoUpdated(punto.copy(coordenada = offset))
+                    },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        isDragging = true
+                        val newOffset = Offset(
+                            x = (offset.x + dragAmount.x).coerceIn(0f, 300f - 26f),
+                            y = (offset.y + dragAmount.y).coerceIn(0f, 300f - 26f)
+                        )
+                        offset = newOffset
+                    }
+                )
+            }
+    ) {
+        Text(
+            text = punto.id.toString(),
+            fontSize = 10.sp,
+            color = Color.Black,
+            modifier = Modifier.align(Alignment.Center)
+        )
     }
 }
