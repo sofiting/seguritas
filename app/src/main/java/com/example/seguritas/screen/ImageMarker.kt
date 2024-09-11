@@ -86,7 +86,6 @@ fun ImageMarkerScreen(navController: NavController) {
             Button(onClick = {
                 selectedId?.let { id ->
                     puntos = puntos.filter { it.id != id }
-                    selectedId = null
                 }
             }) {
                 Text("Borrar Punto")
