@@ -24,6 +24,7 @@ fun ImageMarkerScreen(navController: NavController) {
     var puntos by remember { mutableStateOf(listOf<Punto>()) }
     var selectedId by remember { mutableStateOf<Int?>(null) }
     var isDragging by remember { mutableStateOf(false) }
+    var idCounter by remember { mutableStateOf(1) }
 
     val imageUrl = "https://fancyhouse-design.com/wp-content/uploads/2024/05/Weather-resistant-materials-for-outdoor-spaces-ensure-longevity-and-minimal-maintenance.jpg"
 
@@ -71,10 +72,11 @@ fun ImageMarkerScreen(navController: NavController) {
         Row {
             Button(onClick = {
                 puntos = puntos + Punto(
-                    id = puntos.size + 1,
+                    id = idCounter,
                     coordenada = Offset(x = 150f, y = 150f)
                 )
-                selectedId = puntos.size + 1
+                selectedId = idCounter
+                idCounter++
             }) {
                 Text("Crear Punto")
             }
@@ -102,4 +104,4 @@ fun ImageMarkerScreen(navController: NavController) {
         }
     }
 }
-//test
+
